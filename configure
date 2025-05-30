@@ -1,0 +1,53 @@
+# /bin/sh
+
+function usage()
+{
+    echo $0 [--max-memory memory] dictionary
+}
+
+if [[ $# != 1 && $# != 3 ]]; then
+    usage
+    exit 1
+fi
+
+> Makefile
+
+function append()
+{
+    echo -e $1 >> Makefile
+}
+
+srcdir=$(dirname $0)
+
+if [[ $# == 3 ]]; then
+    if [[ $1 != "--max-memory" ]]; then
+        usage
+        exit 1
+    fi
+    param="--param max-gcse-memory=$2"
+    shift 2
+fi
+
+dictionary=$1
+
+append "VPATH=$srcdir"
+append "CFLAGS=-O3 -Wdisabled-optimization -Wall -Wextra -Wpedantic -Werror $param"
+append "CC=gcc"
+append
+
+append "anagrammer: anagrammer.c"
+append "\t\$(CC) \$(CFLAGS) -o \$@ anagrammer.c"
+append
+
+# install
+
+append "anagrammer.c: source_writer.py Makefile"
+append "\tpython3 $< $dictionary anagrammer.c"
+append
+
+append "Makefile: configure"
+append "\t$< $dictionary"
+append
+
+append "clean:"
+append "\trm anagrammer anagrammer.c"
